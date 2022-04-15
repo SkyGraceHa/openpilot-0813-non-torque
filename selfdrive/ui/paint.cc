@@ -557,9 +557,9 @@ static void ui_draw_gear( UIState *s ) {
     ui_draw_image(s, {x, y+10, w-10, h-10}, "gear_D", 1.0f);
     snprintf(strGear, sizeof(strGear), "%.0f", s->scene.currentGear);    
     ui_print( s, gear_num_x, gear_num_y, strGear );
-  } else if (s->scene.controls_state.getEnabled() && (s->scene.electGearStep < 9) && (s->scene.electGearStep !=0)) {
+  } else if (s->scene.controls_state.getEnabled() && (s->scene.gearStep < 9) && (s->scene.gearStep !=0)) {
     ui_draw_image(s, {x, y+10, w-10, h-10}, "gear_D", 1.0f);
-    snprintf(strGear, sizeof(strGear), "%.0f", s->scene.electGearStep);  
+    snprintf(strGear, sizeof(strGear), "%.0f", s->scene.gearStep);  
     ui_print( s, gear_num_x, gear_num_y, strGear );
   } else {
     switch( ngetGearShifter ) {

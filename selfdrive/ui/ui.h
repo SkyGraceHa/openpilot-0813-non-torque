@@ -239,7 +239,7 @@ typedef struct UIScene {
   int navi_select;
   bool tmux_error_check = false;
   float currentGear;
-  float electGearStep;
+  float gearStep;
   bool speedlimit_signtype;
   bool sl_decel_off;
   bool osm_off_spdlimit;
