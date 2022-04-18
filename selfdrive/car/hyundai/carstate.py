@@ -351,7 +351,7 @@ class CarState(CarStateBase):
 
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
     # as this seems to be standard over all cars, but is not the preferred method.
-    ret.electGearStep = 0
+    ret.gearStep = 0
     if self.CP.carFingerprint in FEATURES["use_cluster_gears"]:
       gear = cp.vl["CLU15"]["CF_Clu_Gear"]
       ret.gearStep = 0
@@ -657,11 +657,11 @@ class CarState(CarStateBase):
       checks += [("ELECT_GEAR", 20)]
     else:
       signals += [
-        ("CF_Lvr_Gear", "LVR12")
+        ("CF_Lvr_Gear", "LVR12"),
         ("CF_Lvr_GearInf", "LVR11")
       ]
       checks += [
-        ("LVR12", 100)
+        ("LVR12", 100),
         ("LVR11", 100)
       ]
 

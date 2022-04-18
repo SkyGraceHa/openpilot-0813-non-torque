@@ -177,7 +177,7 @@ static void update_state(UIState *s) {
     scene.gasPress = cs_data.getGasPressed();
     scene.brakeLights = cs_data.getBrakeLights();
     scene.currentGear = cs_data.getCurrentGear();
-    scene.electGearStep = cs_data.getElectGearStep();
+    scene.gearStep = cs_data.getGearStep();
     scene.getGearShifter = cs_data.getGearShifter();
     scene.leftBlinker = cs_data.getLeftBlinker();
     scene.rightBlinker = cs_data.getRightBlinker();
@@ -408,7 +408,7 @@ static void update_status(UIState *s) {
       s->scene.map_on_top = false;
       s->scene.map_on_overlay = true;
       system("am start --activity-task-on-home com.opkr.maphack/com.opkr.maphack.MainActivity");
-    } else if (s->sm->frame - s->scene.started_frame > 2*UI_FREQ) {
+    } else if (s->sm->frame - s->scene.started_frame > 10*UI_FREQ) {
       s->scene.move_to_background = true;
     }
   }
