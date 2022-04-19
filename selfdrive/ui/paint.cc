@@ -507,12 +507,25 @@ static void ui_draw_debug(UIState *s) {
       ui_draw_text(s, ui_viz_rx+(scene.mapbox_running ? 150:220), ui_viz_ry+520, scene.liveMapData.ocurrentRoadName.c_str(), 34, COLOR_WHITE_ALPHA(125), "KaiGenGothicKR-Medium");
     }
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-    if (scene.lateralControlMethod == 0) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "PID", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
-    } else if (scene.lateralControlMethod == 1) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "INDI", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
-    } else if (scene.lateralControlMethod == 2) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "LQR", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+    if (!scene.animated_rpm) {
+      if (scene.lateralControlMethod == 0) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "PID", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      } else if (scene.lateralControlMethod == 1) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "INDI", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      } else if (scene.lateralControlMethod == 2) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "LQR", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      }
+    }
+    nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+    if (scene.osm_enabled) {
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+240, "SL:%.0f", scene.liveMapData.ospeedLimit);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+280, "SLA:%.0f", scene.liveMapData.ospeedLimitAhead);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+320, "SLAD:%.0f", scene.liveMapData.ospeedLimitAheadDistance);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+360, "TSL:%.0f", scene.liveMapData.oturnSpeedLimit);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+400, "TSLED:%.0f", scene.liveMapData.oturnSpeedLimitEndDistance);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+440, "TSLS:%d", scene.liveMapData.oturnSpeedLimitSign);
+      ui_print(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+480, "TCO:%.2f", -scene.lateralPlan.totalCameraOffset);
+      ui_draw_text(s, ui_viz_rx+(scene.mapbox_running ? 150:200), ui_viz_ry+520, scene.liveMapData.ocurrentRoadName.c_str(), 34, COLOR_WHITE_ALPHA(125), "KaiGenGothicKR-Medium");
     }
   }
   if (scene.cal_view) {
@@ -806,8 +819,10 @@ static void ui_draw_vision_speed(UIState *s) {
     val_color = nvgRGBA((255-int(gas_opacity)), (255-int((act_accel*10))), (255-int(gas_opacity)), 255);
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210, speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
-  ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->fb_w/2, 210+(scene.animated_rpm?50:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
+  if (!s->scene.animated_rpm) {
+    ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
+  }
 }
 
 static void ui_draw_vision_event(UIState *s) {
@@ -1791,6 +1806,30 @@ static void ui_draw_auto_hold(UIState *s) {
   ui_draw_text(s, rect.centerX(), rect.centerY(), "AUTO HOLD", 100, COLOR_GREEN_ALPHA(150), "sans-bold");
 }
 
+static void ui_draw_rpm_animation(UIState *s) {
+  const int center_x = s->fb_w/2;
+  const int center_y = 250;
+  const int radius_i = 140;
+  const int radius_o = 185;
+  //int rpm = scene.engine_rpm;
+  //int rpm = 1500;
+  // yp = y0 + ((y1-y0)/(x1-x0)) * (xp - x0),  yp = interp(xp, [x0, x1], [y0, y1])
+  //int rpm_to_deg = 9 + ((27-9)/(3600-0)) * (rpm - 0); // min:9, max:27
+  int rpm_to_deg = 27;
+
+  nvgBeginPath(s->vg);
+  nvgMoveTo(s->vg, center_x-(radius_i*fabs(cos(NVG_PI/4))), center_y+(radius_i*fabs(sin(NVG_PI/4))));
+  nvgLineTo(s->vg, center_x-(radius_o*fabs(cos(NVG_PI/4))), center_y+(radius_o*fabs(sin(NVG_PI/4))));
+  nvgArc(s->vg, center_x, center_y, radius_o, NVG_PI / 12 * 9, NVG_PI / 12 * rpm_to_deg, NVG_CW);
+  nvgLineTo(s->vg, center_x+(radius_i*fabs(cos(NVG_PI/4))), center_y+(radius_i*fabs(sin(NVG_PI/4))));
+  nvgArc(s->vg, center_x, center_y, radius_i, NVG_PI / 12 * rpm_to_deg, NVG_PI / 12 * 9, NVG_CCW);
+  nvgClosePath(s->vg);
+  nvgStrokeWidth(s->vg, 1);
+  nvgStroke(s->vg);
+  //nvgFillColor(s->vg, nvgRGBA(255,128,0,150));
+  //nvgFill(s->vg);
+}
+
 static void ui_draw_grid(UIState *s) {
   NVGcolor color = COLOR_WHITE_ALPHA(230);
   nvgBeginPath(s->vg);
@@ -1833,6 +1872,9 @@ static void ui_draw_vision(UIState *s) {
   }
   if (scene->brakeHold && !scene->comma_stock_ui) {
     ui_draw_auto_hold(s);
+  }
+  if (s->scene.animated_rpm && !scene->comma_stock_ui) {
+    ui_draw_rpm_animation(s);
   }
   if (scene->cal_view) {
     ui_draw_grid(s);
