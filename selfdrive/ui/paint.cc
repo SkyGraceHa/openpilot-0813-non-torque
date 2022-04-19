@@ -1813,11 +1813,11 @@ static void ui_draw_rpm_animation(UIState *s) {
     nvgArc(s->vg, center_x, center_y, radius_o, target2, target1, NVG_CCW);
     nvgClosePath(s->vg);
     if (count < 18) {
-      nvgFillColor(s->vg, nvgRGBA(4*count,10*count,4*count,10*count));
+      nvgFillColor(s->vg, nvgRGBA(4*count,10*count,4*count,230)); //10*count));
     } else if (count < 22) {
-      nvgFillColor(s->vg, nvgRGBA(8.3*count,5*count,3.5*count,8.6*count));
+      nvgFillColor(s->vg, nvgRGBA(8.3*count,5*count,3.5*count,230)); //8.6*count));
     } else if (count < 28) {
-      nvgFillColor(s->vg, nvgRGBA(6.5*count,1.5*count,1.5*count,6.7*count));
+      nvgFillColor(s->vg, nvgRGBA(6.5*count,1.5*count,1.5*count,230)); //6.7*count));
     }
     nvgFill(s->vg);
     target1 = target2;
