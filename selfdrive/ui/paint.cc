@@ -808,7 +808,7 @@ static void ui_draw_vision_speed(UIState *s) {
     val_color = nvgRGBA((255-int(gas_opacity)), (255-int((act_accel*10))), (255-int(gas_opacity)), 255);
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210+(scene.animated_rpm?50:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
+  ui_draw_text(s, s->fb_w/2, 210+(scene.animated_rpm?100:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
   if (!s->scene.animated_rpm) {
     ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
   }
@@ -1796,27 +1796,33 @@ static void ui_draw_auto_hold(UIState *s) {
 }
 
 static void ui_draw_rpm_animation(UIState *s) {
-  const int center_x = s->fb_w/2;
-  const int center_y = 250;
-  const int radius_i = 140;
-  const int radius_o = 185;
-  //int rpm = scene.engine_rpm;
-  //int rpm = 1500;
+  float center_x = (float)s->fb_w/2.0f;
+  float center_y = 250.0f;
+  float radius_i = 140.0f;
+  float radius_o = 185.0f;
+  float rpm = s->scene.engine_rpm;
   // yp = y0 + ((y1-y0)/(x1-x0)) * (xp - x0),  yp = interp(xp, [x0, x1], [y0, y1])
-  //int rpm_to_deg = 9 + ((27-9)/(3600-0)) * (rpm - 0); // min:9, max:27
-  int rpm_to_deg = 27;
+  float rpm_to_deg = floor(9.0f + ((27.0f-9.0f)/(3600.0f-0.0f)) * (rpm - 0.0f)); // min:9, max:27
+  float target1 = (float)(NVG_PI/12.0f)*9.0f;
+  float target2 = (float)(NVG_PI/12.0f)*10.0f;
 
-  nvgBeginPath(s->vg);
-  nvgMoveTo(s->vg, center_x-(radius_i*fabs(cos(NVG_PI/4))), center_y+(radius_i*fabs(sin(NVG_PI/4))));
-  nvgLineTo(s->vg, center_x-(radius_o*fabs(cos(NVG_PI/4))), center_y+(radius_o*fabs(sin(NVG_PI/4))));
-  nvgArc(s->vg, center_x, center_y, radius_o, NVG_PI / 12 * 9, NVG_PI / 12 * rpm_to_deg, NVG_CW);
-  nvgLineTo(s->vg, center_x+(radius_i*fabs(cos(NVG_PI/4))), center_y+(radius_i*fabs(sin(NVG_PI/4))));
-  nvgArc(s->vg, center_x, center_y, radius_i, NVG_PI / 12 * rpm_to_deg, NVG_PI / 12 * 9, NVG_CCW);
-  nvgClosePath(s->vg);
-  nvgStrokeWidth(s->vg, 1);
-  nvgStroke(s->vg);
-  //nvgFillColor(s->vg, nvgRGBA(255,128,0,150));
-  //nvgFill(s->vg);
+  for (int count = 9; count < (int)rpm_to_deg; ++count) {
+    if (rpm < 1.0f) break;
+    nvgBeginPath(s->vg);
+    nvgArc(s->vg, center_x, center_y, radius_i, target1, target2, NVG_CW);
+    nvgArc(s->vg, center_x, center_y, radius_o, target2, target1, NVG_CCW);
+    nvgClosePath(s->vg);
+    if (count < 18) {
+      nvgFillColor(s->vg, nvgRGBA(4*count,10*count,4*count,10*count));
+    } else if (count < 22) {
+      nvgFillColor(s->vg, nvgRGBA(8.3*count,5*count,3.5*count,8.6*count));
+    } else if (count < 28) {
+      nvgFillColor(s->vg, nvgRGBA(6.5*count,1.5*count,1.5*count,6.7*count));
+    }
+    nvgFill(s->vg);
+    target1 = target2;
+    target2 = (float)(NVG_PI/12.0f)*((float)count+2.0f);
+  }
 }
 
 static void ui_draw_grid(UIState *s) {
