@@ -252,6 +252,7 @@ typedef struct UIScene {
   float accel;
   bool animated_rpm;
   bool stop_line;
+  int gear_step;
 
   cereal::DeviceState::Reader deviceState;
   cereal::CarState::Reader car_state;
