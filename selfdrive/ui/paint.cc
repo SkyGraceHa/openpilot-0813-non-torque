@@ -1122,7 +1122,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
     bb_ry +=bb_ui_draw_measure(s, val_str, uom_str, "ENG RPM",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
-        value_fontSize, label_fontSize, uom_fontSize, scene.animated_rpm);
+        value_fontSize, label_fontSize, uom_fontSize, false);
   }
 
   //finally draw the frame
@@ -1806,6 +1806,7 @@ static void ui_draw_rpm_animation(UIState *s) {
   float radius_i = 140.0f;
   float radius_o = 185.0f;
   char gearstep_str[3];
+  char rpm_str[6];
   float rpm = fmin(s->scene.engine_rpm, 3600.0f);
   //float rpm = 3600.0f;
   // yp = y0 + ((y1-y0)/(x1-x0)) * (xp - x0),  yp = interp(xp, [x0, x1], [y0, y1])
@@ -1842,7 +1843,9 @@ static void ui_draw_rpm_animation(UIState *s) {
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   ui_draw_text(s, center_x, center_y+110, s->scene.is_metric?"KPH":"MPH", 65, s->scene.brakeLights?COLOR_RED_ALPHA(200):COLOR_WHITE_ALPHA(200), "sans-semibold");
   snprintf(gearstep_str, sizeof(gearstep_str), "%d", s->scene.gear_step);
-  ui_draw_text(s, center_x, center_y-100, gearstep_str, 65, COLOR_WHITE_ALPHA(200), "sans-semibold");
+  ui_draw_text(s, center_x, center_y-90, gearstep_str, 55, COLOR_WHITE_ALPHA(200), "sans-semibold");
+  snprintf(rpm_str, sizeof(rpm_str), "%.0f", s->scene.engine_rpm);
+  ui_draw_text(s, center_x, center_y-120, s->scene.engine_rpm>1?rpm_str:"", 45, COLOR_WHITE_ALPHA(200), "sans-semibold");
 }
 
 // grid line by opkr for mounting device appropriate position  BF:Back and Forth Angle, RL:Right and Left Angle
