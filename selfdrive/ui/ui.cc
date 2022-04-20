@@ -110,7 +110,7 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     max_distance = std::clamp((float)(lead_d - fmin(lead_d * 0.35, 10.)), 0.0f, max_distance);
   }
   max_idx = get_path_length_idx(model_position, max_distance);
-  update_line_data(s, model_position, 0.5, 1.22, &scene.track_vertices, max_idx);
+  update_line_data(s, model_position, 1.0, 1.22, &scene.track_vertices, max_idx);
 
   // update stop lines
   if (scene.stop_line) {
@@ -295,6 +295,7 @@ static void update_state(UIState *s) {
     scene.liveMapData.oturnSpeedLimitEndDistance = lmap_data.getTurnSpeedLimitEndDistance();
     scene.liveMapData.oturnSpeedLimitSign = lmap_data.getTurnSpeedLimitSign();
     scene.liveMapData.ocurrentRoadName = lmap_data.getCurrentRoadName();
+    scene.liveMapData.oref = lmap_data.getRef();
   }
   if ((!scene.started || s->is_OpenpilotViewEnabled || scene.cal_view) && sm.updated("sensorEvents")) {
     for (auto sensor : sm["sensorEvents"].getSensorEvents()) {

@@ -507,12 +507,14 @@ static void ui_draw_debug(UIState *s) {
       ui_draw_text(s, ui_viz_rx+(scene.mapbox_running ? 150:220), ui_viz_ry+520, scene.liveMapData.ocurrentRoadName.c_str(), 34, COLOR_WHITE_ALPHA(125), "KaiGenGothicKR-Medium");
     }
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-    if (scene.lateralControlMethod == 0) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "PID", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
-    } else if (scene.lateralControlMethod == 1) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "INDI", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
-    } else if (scene.lateralControlMethod == 2) {
-      ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "LQR", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+    if (!scene.animated_rpm) {
+      if (scene.lateralControlMethod == 0) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "PID", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      } else if (scene.lateralControlMethod == 1) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "INDI", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      } else if (scene.lateralControlMethod == 2) {
+        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "LQR", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
+      }
     }
   }
   if (scene.cal_view) {
@@ -806,8 +808,10 @@ static void ui_draw_vision_speed(UIState *s) {
     val_color = nvgRGBA((255-int(gas_opacity)), (255-int((act_accel*10))), (255-int(gas_opacity)), 255);
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210, speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
-  ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->fb_w/2, 210+(scene.animated_rpm?100:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
+  if (!s->scene.animated_rpm) {
+    ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
+  }
 }
 
 static void ui_draw_vision_event(UIState *s) {
@@ -1628,6 +1632,7 @@ void draw_top_text(UIState *s) {
   }
 
   const std::string road_name = s->scene.liveMapData.ocurrentRoadName;
+  const std::string ref_ = s->scene.liveMapData.oref;
   std::string text_out = "";
   if (s->scene.top_text_view == 1) {
     snprintf(now,sizeof(now),"%02d/%02d %s %02d:%02d:%02d", tm.tm_mon + 1, tm.tm_mday, dayofweek, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -1644,17 +1649,17 @@ void draw_top_text(UIState *s) {
   } else if (s->scene.top_text_view == 4 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d/%02d %s %02d:%02d:%02d ", tm.tm_mon + 1, tm.tm_mday, dayofweek, tm.tm_hour, tm.tm_min, tm.tm_sec);
     std::string str(now);
-    text_out = road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 5 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d/%02d %s ", tm.tm_mon + 1, tm.tm_mday, dayofweek);
     std::string str(now);
-    text_out = road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 6 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d:%02d:%02d ", tm.tm_hour, tm.tm_min, tm.tm_sec);
     std::string str(now);
-    text_out = road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 7 && s->scene.osm_enabled) {
-    text_out = road_name;
+    text_out = "#" + ref_ + "#" + road_name;
   }
   float tw = nvgTextBounds(s->vg, 0, 0, text_out.c_str(), nullptr, nullptr);
   rect_w = tw*2;
@@ -1790,6 +1795,48 @@ static void ui_draw_auto_hold(UIState *s) {
   ui_draw_text(s, rect.centerX(), rect.centerY(), "AUTO HOLD", 100, COLOR_GREEN_ALPHA(150), "sans-bold");
 }
 
+static void ui_draw_rpm_animation(UIState *s) {
+  float center_x = (float)s->fb_w/2.0f;
+  float center_y = 250.0f;
+  float radius_i = 140.0f;
+  float radius_o = 185.0f;
+  float rpm = fmin(s->scene.engine_rpm, 3600.0f);
+  //float rpm = 3600.0f;
+  // yp = y0 + ((y1-y0)/(x1-x0)) * (xp - x0),  yp = interp(xp, [x0, x1], [y0, y1])
+  float rpm_to_deg = floor(9.0f + ((27.0f-9.0f)/(3600.0f-0.0f)) * (rpm - 0.0f)); // min:9, max:27
+  float target1 = (float)(NVG_PI/12.0f)*9.0f;
+  float target2 = (float)(NVG_PI/12.0f)*10.0f;
+
+  for (int count = 9; count < (int)rpm_to_deg; ++count) {
+    if (rpm < 1.0f) break;
+    nvgBeginPath(s->vg);
+    nvgArc(s->vg, center_x, center_y, radius_i, target1, target2, NVG_CW);
+    nvgArc(s->vg, center_x, center_y, radius_o, target2, target1, NVG_CCW);
+    nvgClosePath(s->vg);
+    nvgStrokeWidth(s->vg, 3);
+    nvgStrokeColor(s->vg, COLOR_BLACK_ALPHA(100));
+    nvgStroke(s->vg);
+    if (count < 12) {
+      nvgFillColor(s->vg, nvgRGBA(25,127,54,200));
+    } else if (count < 15) {
+      nvgFillColor(s->vg, nvgRGBA(34,177,76,200));
+    } else if (count < 18) {
+      nvgFillColor(s->vg, nvgRGBA(0,255,0,200));
+    } else if (count < 21) {
+      nvgFillColor(s->vg, nvgRGBA(255,201,14,200));
+    } else if (count < 24) {
+      nvgFillColor(s->vg, nvgRGBA(255,127,39,200));
+    } else if (count < 28) {
+      nvgFillColor(s->vg, nvgRGBA(255,0,0,200));
+    }
+    nvgFill(s->vg);
+    target1 = target2;
+    target2 = (float)(NVG_PI/12.0f)*((float)count+2.0f);
+  }
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  ui_draw_text(s, center_x, center_y+110, s->scene.is_metric?"KPH":"MPH", 65, s->scene.brakeLights?COLOR_RED_ALPHA(200):COLOR_WHITE_ALPHA(200), "sans-semibold");
+}
+
 static void ui_draw_grid(UIState *s) {
   NVGcolor color = COLOR_WHITE_ALPHA(230);
   nvgBeginPath(s->vg);
@@ -1832,6 +1879,9 @@ static void ui_draw_vision(UIState *s) {
   }
   if (scene->brakeHold && !scene->comma_stock_ui) {
     ui_draw_auto_hold(s);
+  }
+  if (s->scene.animated_rpm && !scene->comma_stock_ui) {
+    ui_draw_rpm_animation(s);
   }
   if (scene->cal_view) {
     ui_draw_grid(s);
