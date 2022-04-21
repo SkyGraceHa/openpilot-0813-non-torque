@@ -447,15 +447,18 @@ static void ui_draw_debug(UIState *s) {
   int ui_viz_rx = bdr_s + 190;
   int ui_viz_ry = bdr_s + 100;
   int ui_viz_rx_center = s->fb_w/2;
+  int debug_y1 = ui_viz_ry+720+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
+  int debug_y2 = ui_viz_ry+760+(scene.mapbox_running ? 3:0)-(scene.animated_rpm?60:0);
+  int debug_y3 = ui_viz_ry+680+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
   
   nvgTextAlign(s->vg, NVG_ALIGN_MIDDLE | NVG_ALIGN_MIDDLE);
 
-  if (scene.nDebugUi1 & !scene.mapbox_running) {
-    ui_draw_text(s, ui_viz_rx, ui_viz_ry+720+(scene.mapbox_running ? 18:0), scene.alertTextMsg1.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
-    ui_draw_text(s, ui_viz_rx, ui_viz_ry+760+(scene.mapbox_running ? 3:0), scene.alertTextMsg2.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
+  if (scene.nDebugUi1) {
+    ui_draw_text(s, ui_viz_rx, debug_y1, scene.alertTextMsg1.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
+    ui_draw_text(s, ui_viz_rx, debug_y2, scene.alertTextMsg2.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
   }
   if (scene.nDebugUi3) {
-    ui_draw_text(s, ui_viz_rx, ui_viz_ry+680+(scene.mapbox_running ? 18:0), scene.alertTextMsg3.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
+    ui_draw_text(s, ui_viz_rx, debug_y3, scene.alertTextMsg3.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
   }
 
   
@@ -515,8 +518,6 @@ static void ui_draw_debug(UIState *s) {
       } else if (scene.lateralControlMethod == 2) {
         ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "LQR", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
       } else if (scene.lateralControlMethod == 3) {
-        ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "ANGLE", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
-      } else if (scene.lateralControlMethod == 4) {
         ui_draw_text(s, ui_viz_rx_center, bdr_s+310, "TORQUE", 60, COLOR_YELLOW_ALPHA(200), "sans-bold");
       }
     }
@@ -806,13 +807,13 @@ static void ui_draw_vision_speed(UIState *s) {
   	val_color = nvgRGBA(201, 34, 49, 100);
   } else if (scene.gasPress && !scene.comma_stock_ui) {
     val_color = nvgRGBA(0, 240, 0, 255);
-  } else if (act_accel < 0 && !scene.comma_stock_ui) {
+  } else if (act_accel < 0 && act_accel > -5.0 && !scene.comma_stock_ui) {
     val_color = nvgRGBA((255-int(abs(act_accel*8))), (255-int(brake_opacity)), (255-int(brake_opacity)), 255);
-  } else if (act_accel > 0 && !scene.comma_stock_ui) {
+  } else if (act_accel > 0 && act_accel < 3.0 && !scene.comma_stock_ui) {
     val_color = nvgRGBA((255-int(gas_opacity)), (255-int((act_accel*10))), (255-int(gas_opacity)), 255);
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210+(scene.animated_rpm?100:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
+  ui_draw_text(s, s->fb_w/2, 210+(s->scene.animated_rpm?35:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
   if (!s->scene.animated_rpm) {
     ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
   }
@@ -1608,11 +1609,11 @@ static void ui_draw_blindspot_mon(UIState *s) {
 }
 
 // draw date/time/streetname
-void draw_top_text(UIState *s) {
+void draw_datetime_osm_info_text(UIState *s) {
   int rect_w = 600;
   int rect_x = s->fb_w/2 - rect_w/2;
-  const int rect_y = 0;
-  const int rect_h = 65;
+  const int rect_h = 60;
+  const int rect_y = !s->scene.animated_rpm?0:(s->fb_h-rect_h);
   char dayofweek[50];
 
   // Get local time to display
@@ -1675,7 +1676,7 @@ void draw_top_text(UIState *s) {
   nvgFillColor(s->vg, COLOR_BLACK_ALPHA(60));
   nvgFill(s->vg);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
-  ui_draw_text(s, s->fb_w/2, rect_y, text_out.c_str(), s->scene.mapbox_running?37:62, COLOR_WHITE_ALPHA(200), "KaiGenGothicKR-Bold");
+  ui_draw_text(s, s->fb_w/2, rect_y, text_out.c_str(), s->scene.mapbox_running?33:57, COLOR_WHITE_ALPHA(190), "KaiGenGothicKR-Medium");
 }
 
 // live camera offset adjust by OPKR
@@ -1778,6 +1779,18 @@ static void ui_draw_live_tune_panel(UIState *s) {
     ui_print(s, s->fb_w/2, y_pos + height/2, "%0.5f", s->scene.lqrDcGain*0.00001);
     nvgFontSize(s->vg, 120);
     ui_print(s, s->fb_w/2, y_pos - 95, "LQR:3.DcGain");
+  } else if (s->scene.live_tune_panel_list == (s->scene.list_count+0) && s->scene.lateralControlMethod == 3) {
+    ui_print(s, s->fb_w/2, y_pos + height/2, "%0.1f", s->scene.torqueKp*0.1);
+    nvgFontSize(s->vg, 120);
+    ui_print(s, s->fb_w/2, y_pos - 95, "TORQUE:1.Kp");
+  } else if (s->scene.live_tune_panel_list == (s->scene.list_count+1) && s->scene.lateralControlMethod == 3) {
+    ui_print(s, s->fb_w/2, y_pos + height/2, "%0.1f", s->scene.torqueKf*0.1);
+    nvgFontSize(s->vg, 120);
+    ui_print(s, s->fb_w/2, y_pos - 95, "TORQUE:1.Kf");
+  } else if (s->scene.live_tune_panel_list == (s->scene.list_count+2) && s->scene.lateralControlMethod == 3) {
+    ui_print(s, s->fb_w/2, y_pos + height/2, "%0.1f", s->scene.torqueKi*0.1);
+    nvgFontSize(s->vg, 120);
+    ui_print(s, s->fb_w/2, y_pos - 95, "TORQUE:3.Ki");
   }
   nvgFillColor(s->vg, nvgRGBA(171,242,0,150));
   nvgFill(s->vg);
@@ -1802,15 +1815,15 @@ static void ui_draw_auto_hold(UIState *s) {
 // rpm animation by opkr
 static void ui_draw_rpm_animation(UIState *s) {
   float center_x = (float)s->fb_w/2.0f;
-  float center_y = 250.0f;
+  float center_y = 185.0f;
   float radius_i = 140.0f;
   float radius_o = 185.0f;
-  char gearstep_str[3];
   char rpm_str[6];
-  float rpm = fmin(s->scene.engine_rpm, 3600.0f);
+  float max_rpm = (float)s->scene.max_animated_rpm;
+  float rpm = fmin(s->scene.engine_rpm, max_rpm);
   //float rpm = 3600.0f;
   // yp = y0 + ((y1-y0)/(x1-x0)) * (xp - x0),  yp = interp(xp, [x0, x1], [y0, y1])
-  float rpm_to_deg = floor(9.0f + ((27.0f-9.0f)/(3600.0f-0.0f)) * (rpm - 0.0f)); // min:9, max:27
+  float rpm_to_deg = floor(9.0f + ((27.0f-9.0f)/(max_rpm-0.0f)) * (rpm - 0.0f)); // min:9, max:27
   float target1 = (float)(NVG_PI/12.0f)*9.0f;
   float target2 = (float)(NVG_PI/12.0f)*10.0f;
 
@@ -1842,10 +1855,8 @@ static void ui_draw_rpm_animation(UIState *s) {
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   ui_draw_text(s, center_x, center_y+110, s->scene.is_metric?"KPH":"MPH", 65, s->scene.brakeLights?COLOR_RED_ALPHA(200):COLOR_WHITE_ALPHA(200), "sans-semibold");
-  snprintf(gearstep_str, sizeof(gearstep_str), "%d", s->scene.gear_step);
-  ui_draw_text(s, center_x, center_y-90, gearstep_str, 55, COLOR_WHITE_ALPHA(200), "sans-semibold");
   snprintf(rpm_str, sizeof(rpm_str), "%.0f", s->scene.engine_rpm);
-  ui_draw_text(s, center_x, center_y-120, s->scene.engine_rpm>1?rpm_str:"", 45, COLOR_WHITE_ALPHA(200), "sans-semibold");
+  ui_draw_text(s, center_x, center_y-110, s->scene.engine_rpm>1?rpm_str:"", 55, COLOR_WHITE_ALPHA(200), "sans-semibold");
 }
 
 // grid line by opkr for mounting device appropriate position  BF:Back and Forth Angle, RL:Right and Left Angle
@@ -1887,7 +1898,7 @@ static void ui_draw_vision(UIState *s) {
     ui_draw_live_tune_panel(s);
   }
   if (scene->top_text_view > 0 && !scene->comma_stock_ui) {
-    draw_top_text(s);
+    draw_datetime_osm_info_text(s);
   }
   if (scene->brakeHold && !scene->comma_stock_ui) {
     ui_draw_auto_hold(s);
