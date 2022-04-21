@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from enum import Enum
 from common.params import Params
+from decimal import Decimal
 
 class LongTunes(Enum):
   PEDAL = 0
@@ -42,6 +43,7 @@ def set_long_tune(tune, name):
 
 ###### LAT ######
 def set_lat_tune(tune, name, MAX_TORQUE=2.5, FRICTION=.1):
+  params = Params()
   if name == LatTunes.TORQUE:
     TorqueKp = float(Decimal(params.get("TorqueKp", encoding="utf8")) * Decimal('0.1'))
     TorqueKf = float(Decimal(params.get("TorqueKf", encoding="utf8")) * Decimal('0.1'))
