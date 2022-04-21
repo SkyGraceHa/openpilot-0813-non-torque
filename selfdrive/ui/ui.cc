@@ -146,6 +146,8 @@ static void update_state(UIState *s) {
       scene.output_scale = scene.controls_state.getLateralControlState().getIndiState().getOutput();
     } else if (scene.lateralControlMethod == 2) {
       scene.output_scale = scene.controls_state.getLateralControlState().getLqrState().getOutput();
+    } else if (scene.lateralControlMethod == 3) {
+      scene.output_scale = scene.controls_state.getLateralControlState().getTorqueState().getOutput();
     }
 
     scene.alertTextMsg1 = scene.controls_state.getAlertTextMsg1(); //debug1
@@ -194,6 +196,7 @@ static void update_state(UIState *s) {
     scene.stand_still = cs_data.getStandstill();
     scene.a_req_value = cs_data.getAReqValue();
     scene.engine_rpm = cs_data.getEngineRpm();
+    scene.gear_step = cs_data.getGearStep();
   }
 
   if (sm.updated("liveParameters")) {
@@ -446,6 +449,9 @@ static void update_status(UIState *s) {
     s->scene.pidKi = std::stoi(params.get("PidKi"));
     s->scene.pidKd = std::stoi(params.get("PidKd"));
     s->scene.pidKf = std::stoi(params.get("PidKf"));
+    s->scene.torqueKp = std::stoi(params.get("TorqueKp"));
+    s->scene.torqueKf = std::stoi(params.get("TorqueKf"));
+    s->scene.torqueKi = std::stoi(params.get("TorqueKi"));
     s->scene.indiInnerLoopGain = std::stoi(params.get("InnerLoopGain"));
     s->scene.indiOuterLoopGain = std::stoi(params.get("OuterLoopGain"));
     s->scene.indiTimeConstant = std::stoi(params.get("TimeConstant"));
@@ -457,6 +463,7 @@ static void update_status(UIState *s) {
     s->scene.radar_long_helper = std::stoi(params.get("RadarLongHelper"));
     s->scene.live_tune_panel_enable = params.getBool("OpkrLiveTunePanelEnable");
     s->scene.top_text_view = std::stoi(params.get("TopTextView"));
+    s->scene.max_animated_rpm = std::stoi(params.get("AnimatedRPMMax"));
     s->scene.show_error = params.getBool("ShowError");
     s->scene.speedlimit_signtype = params.getBool("OpkrSpeedLimitSignType");
     s->scene.sl_decel_off = params.getBool("SpeedLimitDecelOff");

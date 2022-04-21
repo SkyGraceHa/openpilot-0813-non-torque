@@ -1425,6 +1425,51 @@ private:
   void refresh();
 };
 
+class TorqueKp : public AbstractControl {
+  Q_OBJECT
+
+public:
+  TorqueKp();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
+class TorqueKf : public AbstractControl {
+  Q_OBJECT
+
+public:
+  TorqueKf();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
+class TorqueKi : public AbstractControl {
+  Q_OBJECT
+
+public:
+  TorqueKi();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
+};
+
 class SteerAngleCorrection : public AbstractControl {
   Q_OBJECT
 
@@ -2163,6 +2208,21 @@ public:
 private:
   QPushButton btn0;
   QPushButton btn1;
+  Params params;
+  
+  void refresh();
+};
+
+class RPMAnimatedMaxValue : public AbstractControl {
+  Q_OBJECT
+
+public:
+  RPMAnimatedMaxValue();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
   Params params;
   
   void refresh();
