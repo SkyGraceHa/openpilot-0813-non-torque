@@ -1613,7 +1613,7 @@ void draw_datetime_osm_info_text(UIState *s) {
   int rect_w = 600;
   int rect_x = s->fb_w/2 - rect_w/2;
   const int rect_h = 60;
-  const int rect_y = !s->scene.animated_rpm?0:(s->fb_h-rect_h);
+  const int rect_y = 0; //!s->scene.animated_rpm?0:(s->fb_h-rect_h);
   char dayofweek[50];
 
   // Get local time to display
