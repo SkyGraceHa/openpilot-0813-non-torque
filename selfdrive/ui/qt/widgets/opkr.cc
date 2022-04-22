@@ -3134,7 +3134,7 @@ SteerMax::SteerMax() : AbstractControl("", "", "") {
   QObject::connect(&btnminusl, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("SteerMaxBaseAdj"));
     int value = str.toInt();
-    value = value - 2;
+    value = value - 1;
     if (value <= 200) {
       value = 200;
     }
@@ -3148,7 +3148,7 @@ SteerMax::SteerMax() : AbstractControl("", "", "") {
     int value1 = str1.toInt();
     auto str = QString::fromStdString(params.get("SteerMaxBaseAdj"));
     int value = str.toInt();
-    value = value + 2;
+    value = value + 1;
     if (value > value1) {
       value = value1;
       ConfirmationDialog::alert("The value cannot exceed SteerMax(" + str1 + ")", this);
@@ -3165,7 +3165,7 @@ SteerMax::SteerMax() : AbstractControl("", "", "") {
     int value1 = str1.toInt();
     auto str = QString::fromStdString(params.get("SteerMaxAdj"));
     int value = str.toInt();
-    value = value - 2;
+    value = value - 1;
     if (value < value1) {
       value = value1;
       ConfirmationDialog::alert("The value cannot be less than SteerMaxBase(" + str1 + ")", this);
@@ -3180,7 +3180,7 @@ SteerMax::SteerMax() : AbstractControl("", "", "") {
   QObject::connect(&btnplusr, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("SteerMaxAdj"));
     int value = str.toInt();
-    value = value + 2;
+    value = value + 1;
     if (value >= 1024) {
       value = 1024;
     }
@@ -3840,7 +3840,7 @@ void PidKf::refresh() {
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
-ActuatorEffectiveness::ActuatorEffectiveness() : AbstractControl("ActuatorEffectiveness", "1.Lowest value without oversteering. May vary with speed.", "../assets/offroad/icon_shell.png") {
+OuterLoopGain::OuterLoopGain() : AbstractControl("OuterLoopGain", "Adjust OuterLoopGain", "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -3870,40 +3870,103 @@ ActuatorEffectiveness::ActuatorEffectiveness() : AbstractControl("ActuatorEffect
   hlayout->addWidget(&btnplus);
 
   QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("ActuatorEffectiveness"));
+    auto str = QString::fromStdString(params.get("OuterLoopGain"));
     int value = str.toInt();
     value = value - 1;
     if (value <= 1) {
       value = 1;
     }
     QString values = QString::number(value);
-    params.put("ActuatorEffectiveness", values.toStdString());
+    params.put("OuterLoopGain", values.toStdString());
     refresh();
   });
   
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("ActuatorEffectiveness"));
+    auto str = QString::fromStdString(params.get("OuterLoopGain"));
     int value = str.toInt();
     value = value + 1;
     if (value >= 200) {
       value = 200;
     }
     QString values = QString::number(value);
-    params.put("ActuatorEffectiveness", values.toStdString());
+    params.put("OuterLoopGain", values.toStdString());
     refresh();
   });
   refresh();
 }
 
-void ActuatorEffectiveness::refresh() {
-  auto strs = QString::fromStdString(params.get("ActuatorEffectiveness"));
+void OuterLoopGain::refresh() {
+  auto strs = QString::fromStdString(params.get("OuterLoopGain"));
   int valuei = strs.toInt();
   float valuef = valuei * 0.1;
   QString valuefs = QString::number(valuef);
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
-TimeConstant::TimeConstant() : AbstractControl("TimeConstant", "2.Lowest value with smooth actuation. Avoid the noise of actuator gears thrashing.", "../assets/offroad/icon_shell.png") {
+InnerLoopGain::InnerLoopGain() : AbstractControl("InnerLoopGain", "Adjust InnerLoopGain", "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  btnminus.setText("－");
+  btnplus.setText("＋");
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("InnerLoopGain"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= 1) {
+      value = 1;
+    }
+    QString values = QString::number(value);
+    params.put("InnerLoopGain", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("InnerLoopGain"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 200) {
+      value = 200;
+    }
+    QString values = QString::number(value);
+    params.put("InnerLoopGain", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void InnerLoopGain::refresh() {
+  auto strs = QString::fromStdString(params.get("InnerLoopGain"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  QString valuefs = QString::number(valuef);
+  label.setText(QString::fromStdString(valuefs.toStdString()));
+}
+
+TimeConstant::TimeConstant() : AbstractControl("TimeConstant", "Adjust TimeConstant", "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -3966,7 +4029,7 @@ void TimeConstant::refresh() {
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
-InnerLoopGain::InnerLoopGain() : AbstractControl("InnerLoopGain", "3.Highest value that still gives smooth control. Effects turning into curves.", "../assets/offroad/icon_shell.png") {
+ActuatorEffectiveness::ActuatorEffectiveness() : AbstractControl("ActuatorEffectiveness", "Adjust ActuatorEffectiveness", "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -3996,38 +4059,39 @@ InnerLoopGain::InnerLoopGain() : AbstractControl("InnerLoopGain", "3.Highest val
   hlayout->addWidget(&btnplus);
 
   QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("InnerLoopGain"));
+    auto str = QString::fromStdString(params.get("ActuatorEffectiveness"));
     int value = str.toInt();
     value = value - 1;
     if (value <= 1) {
       value = 1;
     }
     QString values = QString::number(value);
-    params.put("InnerLoopGain", values.toStdString());
+    params.put("ActuatorEffectiveness", values.toStdString());
     refresh();
   });
   
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("InnerLoopGain"));
+    auto str = QString::fromStdString(params.get("ActuatorEffectiveness"));
     int value = str.toInt();
     value = value + 1;
     if (value >= 200) {
       value = 200;
     }
     QString values = QString::number(value);
-    params.put("InnerLoopGain", values.toStdString());
+    params.put("ActuatorEffectiveness", values.toStdString());
     refresh();
   });
   refresh();
 }
 
-void InnerLoopGain::refresh() {
-  auto strs = QString::fromStdString(params.get("InnerLoopGain"));
+void ActuatorEffectiveness::refresh() {
+  auto strs = QString::fromStdString(params.get("ActuatorEffectiveness"));
   int valuei = strs.toInt();
   float valuef = valuei * 0.1;
   QString valuefs = QString::number(valuef);
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
+
 Scale::Scale() : AbstractControl("Scale", "Adjust Scale", "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
@@ -4081,69 +4145,6 @@ Scale::Scale() : AbstractControl("Scale", "Adjust Scale", "../assets/offroad/ico
     refresh();
   });
   refresh();
-}
-
-OuterLoopGain::OuterLoopGain() : AbstractControl("OuterLoopGain", "4.Highest value that still gives smooth control. Effects lane centering.", "../assets/offroad/icon_shell.png") {
-
-  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
-  label.setStyleSheet("color: #e0e879");
-  hlayout->addWidget(&label);
-
-  btnminus.setStyleSheet(R"(
-    padding: 0;
-    border-radius: 50px;
-    font-size: 35px;
-    font-weight: 500;
-    color: #E4E4E4;
-    background-color: #393939;
-  )");
-  btnplus.setStyleSheet(R"(
-    padding: 0;
-    border-radius: 50px;
-    font-size: 35px;
-    font-weight: 500;
-    color: #E4E4E4;
-    background-color: #393939;
-  )");
-  btnminus.setFixedSize(150, 100);
-  btnplus.setFixedSize(150, 100);
-  btnminus.setText("－");
-  btnplus.setText("＋");
-  hlayout->addWidget(&btnminus);
-  hlayout->addWidget(&btnplus);
-
-  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("OuterLoopGain"));
-    int value = str.toInt();
-    value = value - 1;
-    if (value <= 1) {
-      value = 1;
-    }
-    QString values = QString::number(value);
-    params.put("OuterLoopGain", values.toStdString());
-    refresh();
-  });
-  
-  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
-    auto str = QString::fromStdString(params.get("OuterLoopGain"));
-    int value = str.toInt();
-    value = value + 1;
-    if (value >= 200) {
-      value = 200;
-    }
-    QString values = QString::number(value);
-    params.put("OuterLoopGain", values.toStdString());
-    refresh();
-  });
-  refresh();
-}
-
-void OuterLoopGain::refresh() {
-  auto strs = QString::fromStdString(params.get("OuterLoopGain"));
-  int valuei = strs.toInt();
-  float valuef = valuei * 0.1;
-  QString valuefs = QString::number(valuef);
-  label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
 void Scale::refresh() {
@@ -4319,10 +4320,12 @@ TorqueKp::TorqueKp() : AbstractControl("Kp", "Adjust Kp", "../assets/offroad/ico
   
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("TorqueKp"));
+    auto str1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
     int value = str.toInt();
+    int max_lat_accel = str1.toInt();
     value = value + 1;
-    if (value >= 25) {
-      value = 25;
+    if (value >= max_lat_accel) {
+      value = max_lat_accel;
     }
     QString values = QString::number(value);
     params.put("TorqueKp", values.toStdString());
@@ -4333,9 +4336,12 @@ TorqueKp::TorqueKp() : AbstractControl("Kp", "Adjust Kp", "../assets/offroad/ico
 
 void TorqueKp::refresh() {
   auto strs = QString::fromStdString(params.get("TorqueKp"));
+  auto strs1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
+  float max_lat_accel = strs1.toInt() * 0.1;
   int valuei = strs.toInt();
   float valuef = valuei * 0.1;
-  QString valuefs = QString::number(valuef);
+  float valuef1 = valuef/max_lat_accel;
+  QString valuefs = QString::number(valuef) + "/" + QString::number(max_lat_accel) + "= " + QString::number(valuef1);
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
@@ -4382,10 +4388,12 @@ TorqueKf::TorqueKf() : AbstractControl("Kf", "Adjust Kf", "../assets/offroad/ico
   
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("TorqueKf"));
+    auto str1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
     int value = str.toInt();
+    int max_lat_accel = str1.toInt();
     value = value + 1;
-    if (value >= 25) {
-      value = 25;
+    if (value >= max_lat_accel) {
+      value = max_lat_accel;
     }
     QString values = QString::number(value);
     params.put("TorqueKf", values.toStdString());
@@ -4396,9 +4404,12 @@ TorqueKf::TorqueKf() : AbstractControl("Kf", "Adjust Kf", "../assets/offroad/ico
 
 void TorqueKf::refresh() {
   auto strs = QString::fromStdString(params.get("TorqueKf"));
+  auto strs1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
+  float max_lat_accel = strs1.toInt() * 0.1;
   int valuei = strs.toInt();
   float valuef = valuei * 0.1;
-  QString valuefs = QString::number(valuef);
+  float valuef1 = valuef/max_lat_accel;
+  QString valuefs = QString::number(valuef) + "/" + QString::number(max_lat_accel) + "= " + QString::number(valuef1);
   label.setText(QString::fromStdString(valuefs.toStdString()));
 }
 
@@ -4445,10 +4456,12 @@ TorqueKi::TorqueKi() : AbstractControl("Ki", "Adjust Ki", "../assets/offroad/ico
   
   QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
     auto str = QString::fromStdString(params.get("TorqueKi"));
+    auto str1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
     int value = str.toInt();
+    int max_lat_accel = str1.toInt();
     value = value + 1;
-    if (value >= 25) {
-      value = 25;
+    if (value >= max_lat_accel) {
+      value = max_lat_accel;
     }
     QString values = QString::number(value);
     params.put("TorqueKi", values.toStdString());
@@ -4459,6 +4472,135 @@ TorqueKi::TorqueKi() : AbstractControl("Ki", "Adjust Ki", "../assets/offroad/ico
 
 void TorqueKi::refresh() {
   auto strs = QString::fromStdString(params.get("TorqueKi"));
+  auto strs1 = QString::fromStdString(params.get("TorqueMaxLatAccel"));
+  float max_lat_accel = strs1.toInt() * 0.1;
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  float valuef1 = valuef/max_lat_accel;
+  QString valuefs = QString::number(valuef) + "/" + QString::number(max_lat_accel) + "= " + QString::number(valuef1);
+  label.setText(QString::fromStdString(valuefs.toStdString()));
+}
+
+TorqueFriction::TorqueFriction() : AbstractControl("Friction", "Adjust Friction", "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  btnminus.setText("－");
+  btnplus.setText("＋");
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("TorqueFriction"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= 0) {
+      value = 0;
+    }
+    QString values = QString::number(value);
+    params.put("TorqueFriction", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("TorqueFriction"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 30) {
+      value = 30;
+    }
+    QString values = QString::number(value);
+    params.put("TorqueFriction", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void TorqueFriction::refresh() {
+  auto strs = QString::fromStdString(params.get("TorqueFriction"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.01;
+  QString valuefs = QString::number(valuef);
+  label.setText(QString::fromStdString(valuefs.toStdString()));
+}
+
+TorqueMaxLatAccel::TorqueMaxLatAccel() : AbstractControl("MaxLatAccel", "Adjust MaxLatAccel", "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  btnminus.setText("－");
+  btnplus.setText("＋");
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("TorqueMaxLatAccel"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= 1) {
+      value = 1;
+    }
+    QString values = QString::number(value);
+    params.put("TorqueMaxLatAccel", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::clicked, [=]() {
+    auto str = QString::fromStdString(params.get("TorqueMaxLatAccel"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 50) {
+      value = 50;
+    }
+    QString values = QString::number(value);
+    params.put("TorqueMaxLatAccel", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void TorqueMaxLatAccel::refresh() {
+  auto strs = QString::fromStdString(params.get("TorqueMaxLatAccel"));
   int valuei = strs.toInt();
   float valuef = valuei * 0.1;
   QString valuefs = QString::number(valuef);
@@ -6075,7 +6217,7 @@ void OSMCustomSpeedLimit::refresh() {
   btn.setText("EDIT");
 }
 
-DesiredCurvatureLimit::DesiredCurvatureLimit() : AbstractControl("DesiredCurvatureLimit", "Adjust DisiredCurvatureLimit, Default is 0.05(DT_MDL), For HKG, maybe 1.0~ is preferred from user's experience. If the steering digs into inside on intersection, upper the value. And then it will limit your scope of steering angle. In case of opposite situation, lower the value. this is multiplier of desired curvature rate not real limit value.", "../assets/offroad/icon_shell.png") {
+DesiredCurvatureLimit::DesiredCurvatureLimit() : AbstractControl("DesiredCurvatureLimit", "Adjust DisiredCurvatureLimit, Default is 0.05(DT_MDL), For HKG, maybe 0.2 is preferred from user's experience. If the steering digs into inside on intersection, upper the value. And then it will limit your scope of steering angle. In case of opposite situation, lower the value. this is multiplier of desired curvature rate not real limit value.", "../assets/offroad/icon_shell.png") {
 
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -6155,8 +6297,8 @@ DesiredCurvatureLimit::DesiredCurvatureLimit() : AbstractControl("DesiredCurvatu
     auto str = QString::fromStdString(params.get("DesiredCurvatureLimit"));
     int value = str.toInt();
     value = value + (digit*100);
-    if (value >= 2000) {
-      value = 2000;
+    if (value >= 1000) {
+      value = 1000;
     }
     QString values = QString::number(value);
     params.put("DesiredCurvatureLimit", values.toStdString());
