@@ -1836,9 +1836,6 @@ static void ui_draw_rpm_animation(UIState *s) {
     nvgStrokeWidth(s->vg, 3);
     nvgStrokeColor(s->vg, COLOR_BLACK_ALPHA(100));
     nvgStroke(s->vg);
-    if (rpm < 1.0f) {
-      nvgFillColor(s->vg, nvgRGBA(0,140,230,200));
-    }
     if (count < 12) {
       nvgFillColor(s->vg, nvgRGBA(25,127,54,200));
     } else if (count < 15) {
