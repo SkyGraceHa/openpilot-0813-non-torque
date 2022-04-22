@@ -1497,6 +1497,21 @@ public:
   }
 };
 
+class TorqueMaxLatAccel : public AbstractControl {
+  Q_OBJECT
+
+public:
+  TorqueMaxLatAccel();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+
+  void refresh();
+};
+
 class SteerAngleCorrection : public AbstractControl {
   Q_OBJECT
 
