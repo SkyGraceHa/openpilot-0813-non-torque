@@ -447,9 +447,9 @@ static void ui_draw_debug(UIState *s) {
   int ui_viz_rx = bdr_s + 190;
   int ui_viz_ry = bdr_s + 100;
   int ui_viz_rx_center = s->fb_w/2;
-  int debug_y1 = ui_viz_ry+760+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
-  int debug_y2 = ui_viz_ry+800+(scene.mapbox_running ? 3:0)-(scene.animated_rpm?60:0);
-  int debug_y3 = ui_viz_ry+720+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
+  int debug_y1 = ui_viz_ry+720+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
+  int debug_y2 = ui_viz_ry+760+(scene.mapbox_running ? 3:0)-(scene.animated_rpm?60:0);
+  int debug_y3 = ui_viz_ry+680+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
   
   nvgTextAlign(s->vg, NVG_ALIGN_MIDDLE | NVG_ALIGN_MIDDLE);
 
