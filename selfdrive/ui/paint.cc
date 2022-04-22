@@ -1654,17 +1654,17 @@ void draw_datetime_osm_info_text(UIState *s) {
   } else if (s->scene.top_text_view == 4 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d/%02d %s %02d:%02d:%02d ", tm.tm_mon + 1, tm.tm_mday, dayofweek, tm.tm_hour, tm.tm_min, tm.tm_sec);
     std::string str(now);
-    text_out = ref_ + road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 5 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d/%02d %s ", tm.tm_mon + 1, tm.tm_mday, dayofweek);
     std::string str(now);
-    text_out = ref_ + road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 6 && s->scene.osm_enabled) {
     snprintf(now,sizeof(now),"%02d:%02d:%02d ", tm.tm_hour, tm.tm_min, tm.tm_sec);
     std::string str(now);
-    text_out = ref_ + road_name + "  " + str;
+    text_out = "#" + ref_ + "#" + road_name + "  " + str;
   } else if (s->scene.top_text_view == 7 && s->scene.osm_enabled) {
-    text_out = ref_ + road_name;
+    text_out = "#" + ref_ + "#" + road_name;
   }
   float tw = nvgTextBounds(s->vg, 0, 0, text_out.c_str(), nullptr, nullptr);
   rect_w = tw*2;
