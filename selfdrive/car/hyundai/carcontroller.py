@@ -194,7 +194,7 @@ class CarController():
     elif CP.lateralTuning.which() == 'lqr':
       self.str_log2 = 'T={:04.0f}/{:05.3f}/{:07.5f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
     elif CP.lateralTuning.which() == 'torque':
-      self.str_log2 = 'T={:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki)
+      self.str_log2 = 'T={:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}'.format(CP.lateralTuning.torque.kp, CP.lateralTuning.torque.kf, CP.lateralTuning.torque.ki, CP.lateralTuning.torque.friction)
 
     self.sm = messaging.SubMaster(['controlsState', 'radarState', 'longitudinalPlan'])
 
@@ -879,8 +879,10 @@ class CarController():
           self.str_log2 = 'T={:04.0f}/{:05.3f}/{:07.5f}'.format(float(Decimal(self.params.get("Scale", encoding="utf8"))*Decimal('1.0')), \
            float(Decimal(self.params.get("LqrKi", encoding="utf8"))*Decimal('0.001')), float(Decimal(self.params.get("DcGain", encoding="utf8"))*Decimal('0.00001')))
         elif CS.CP.lateralTuning.which() == 'torque':
-          self.str_log2 = 'T={:0.1f}/{:0.1f}/{:0.1f}'.format(float(Decimal(self.params.get("TorqueKp", encoding="utf8"))*Decimal('0.1')), \
-           float(Decimal(self.params.get("TorqueKf", encoding="utf8"))*Decimal('0.1')), float(Decimal(self.params.get("TorqueKi", encoding="utf8"))*Decimal('0.1')))
+          max_lat_accel = float(Decimal(self.params.get("TorqueMaxLatAccel", encoding="utf8"))*Decimal('0.1'))
+          self.str_log2 = 'T={:3.1f}/{:0.2f}/{:0.2f}/{:0.2f}/{:0.2f}'.format(max_lat_accel, float(Decimal(self.params.get("TorqueKp", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, \
+           float(Decimal(self.params.get("TorqueKf", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, float(Decimal(self.params.get("TorqueKi", encoding="utf8"))*Decimal('0.1'))/max_lat_accel, \
+           float(Decimal(self.params.get("TorqueFriction", encoding="utf8")) * Decimal('0.01')))
 
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
